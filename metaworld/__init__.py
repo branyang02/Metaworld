@@ -666,9 +666,38 @@ def register_mw_envs() -> None:
         kwargs={},
     )
 
+    def _ml1_entry_point(
+        env_name: str,
+        split: Literal["train", "test"],
+        seed: int | None = None,
+        total_tasks_per_cls: int | None = None,
+        **lamb_kwargs,
+    ):
+        benchmark = ML1(env_name, seed=seed)
+        all_tasks = benchmark.train_tasks if split == "train" else benchmark.test_tasks
+        tasks = [task for task in all_tasks if task.env_name == env_name]
+        if total_tasks_per_cls is not None:
+            tasks = tasks[:total_tasks_per_cls]
+        terminate_on_success = split == "test"
+        return _init_each_env(
+            env_cls=benchmark.train_classes[env_name],
+            tasks=tasks,
+            seed=seed,
+            terminate_on_success=terminate_on_success,
+            task_select="pseudorandom",
+            **lamb_kwargs,
+        )
+
     for split in ["train", "test"]:
         register(
             id=f"Meta-World/ML1-{split}",
+            entry_point=lambda env_name, _split=split, seed=None, total_tasks_per_cls=None, num_envs=None, **kwargs: _ml1_entry_point(
+                env_name,
+                _split,
+                seed,
+                total_tasks_per_cls,
+                **kwargs,
+            ),
             vector_entry_point=lambda env_name, _split=split, vector_strategy="sync", autoreset_mode=gym.vector.AutoresetMode.SAME_STEP, total_tasks_per_cls=None, meta_batch_size=20, seed=None, num_envs=None, **kwargs: _ml_bench_vector_entry_point(
                 env_name,
                 _split,
