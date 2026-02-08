@@ -669,9 +669,9 @@ def register_mw_envs() -> None:
     for split in ["train", "test"]:
         register(
             id=f"Meta-World/ML1-{split}",
-            vector_entry_point=lambda env_name, vector_strategy="sync", autoreset_mode=gym.vector.AutoresetMode.SAME_STEP, total_tasks_per_cls=None, meta_batch_size=20, seed=None, num_envs=None, **kwargs: _ml_bench_vector_entry_point(
+            vector_entry_point=lambda env_name, _split=split, vector_strategy="sync", autoreset_mode=gym.vector.AutoresetMode.SAME_STEP, total_tasks_per_cls=None, meta_batch_size=20, seed=None, num_envs=None, **kwargs: _ml_bench_vector_entry_point(
                 env_name,
-                split,  # type: ignore[arg-type]
+                _split,
                 vector_strategy,
                 autoreset_mode,
                 total_tasks_per_cls,
